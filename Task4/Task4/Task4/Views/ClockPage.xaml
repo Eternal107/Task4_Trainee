@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:task4="clr-namespace:Task4.Conrols"
+             x:Class="Task4.Views.ClockPage">
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Log out"  Command="{Binding Logout}"/>
+        <ToolbarItem Text="+"  Command="{Binding AddClock}"/>
+    </ContentPage.ToolbarItems>
+    
+    <ContentPage.Padding>
+        <OnPlatform x:TypeArguments="Thickness">
+            <On Platform="iOS" Value="0, 20, 0, 0" />
+        </OnPlatform>
+    </ContentPage.Padding>
+
+    <ScrollView >
+        
+        <task4:CustomStackLayout ItemsSource="{Binding Children}" />
+
+    </ScrollView>
+
+</ContentPage>

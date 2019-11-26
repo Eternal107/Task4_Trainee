@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:task4="clr-namespace:Task4.Controls"
+             x:Class="Task4.Views.ClockSettingPage">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text=""  />
+    </ContentPage.ToolbarItems>
+
+    
+            <Grid x:Name="grid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="32"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+
+        </Grid.ColumnDefinitions>
+
+        <task4:Clock TickMarksColor="{Binding TickMarksColor}" HandColor="{Binding HandColor}" TimeOffset="{Binding TimeOffset}" Grid.ColumnSpan="3"/>
+
+        <StackLayout Grid.Row="1" Grid.RowSpan="3" Grid.ColumnSpan="3">
+
+            <Entry Text="{Binding Country}" Placeholder="Country" FontSize="Small"/>
+            <Entry Text="{Binding TimeOffset}"  Placeholder="Time Zone" FontSize="Small"/>
+
+                    <Slider  Maximum="1" Minimum="0" Value="{Binding RedHandChannel}" ThumbColor="Red" MinimumTrackColor="Red" MaximumTrackColor="Gray"
+               DragCompletedCommand="{Binding SliderValueChanged}" />
+
+                    <Slider  Maximum="1" Minimum="0" Value="{Binding GreenHandChannel}" ThumbColor="Green" MinimumTrackColor="Green" MaximumTrackColor="Gray"
+                DragCompletedCommand="{Binding SliderValueChanged}" />
+
+                    <Slider  Maximum="1" Minimum="0" Value="{Binding BlueHandChannel}" ThumbColor="Blue" MinimumTrackColor="Blue" MaximumTrackColor="Gray"
+                DragCompletedCommand="{Binding SliderValueChanged}" />
+
+                    <Slider  Maximum="1" Minimum="0"  Value="{Binding RedTickChannel}" ThumbColor="Red" MinimumTrackColor="Red" MaximumTrackColor="Gray"
+               DragCompletedCommand="{Binding SliderValueChanged}" />
+
+                    <Slider Maximum="1" Minimum="0" Value="{Binding GreenTickChannel}" ThumbColor="Green" MinimumTrackColor="Green" MaximumTrackColor="Gray"
+               DragCompletedCommand="{Binding SliderValueChanged}" />
+
+                    <Slider Maximum="1" Minimum="0" Value="{Binding BlueTickChannel}" ThumbColor="Blue" MinimumTrackColor="Blue" MaximumTrackColor="Gray"
+                DragCompletedCommand="{Binding SliderValueChanged}" />
+
+
+        </StackLayout>
+        <Button Grid.Row="4" Grid.Column="1"   IsVisible="{Binding IsVisible}" Command="{Binding Savevalue}" Text="Save" FontSize="Micro" BackgroundColor="Indigo" TextColor="White"/>
+
+    </Grid>
+        
+        
+      
+    
+</ContentPage>
