@@ -10,46 +10,47 @@ using System.Collections;
 using SQLite;
 using System.IO;
 using System.Linq;
+using Task4.DataBase;
+using Task4.Repository;
+using Task4.Models;
 
 namespace Task4.ViewModels
 {
     public class ClockPageViewModel : ViewModelBase, INavigatedAware
     {
-       
+        private ClockPageModel Model;
+
+        private DelegateCommand logout;
         private DelegateCommand addClock;
 
         public DelegateCommand AddClock =>
-       addClock ?? (addClock = new DelegateCommand(ToAddClockPage));
-
-        private DelegateCommand logout;
+            addClock ?? (addClock = new DelegateCommand(ToAddClockPage));
 
         public DelegateCommand Logout =>
-       logout ?? (logout = new DelegateCommand(ToMainpage));
-
-        private EventHandler tapped;
+            logout ?? (logout = new DelegateCommand(ToMainpage));
 
         public EventHandler Tapped
         {
-            get { return tapped; }
-            set { SetProperty(ref tapped, value); }
+            get { return Model.tapped; }
+            set { SetProperty(ref Model.tapped, value); }
         }
 
-        private List<View> children=new List<View>();
-
-        public List<View> Children
+        public List<View> Children 
         {
-            get { return children; }
-            set { SetProperty(ref children, value); }
+            get { return Model.children; }
+            set { SetProperty(ref Model.children, value); }
         }
 
         public ClockPageViewModel(INavigationService navigationService) : base(navigationService)
         {
              Title = "clock Page";
-             Tapped += OnRegionClockTapped;
+            Model = new ClockPageModel(App.FilePath);
+            Tapped += OnRegionClockTapped;      
         }
 
         private async void OnRegionClockTapped(object sender, EventArgs args)
         {
+
             var p = new NavigationParameters();
 
             p.Add("RegionClock", (RegionClock)sender);
@@ -57,7 +58,7 @@ namespace Task4.ViewModels
             await NavigationService.NavigateAsync("ClockSettingPage", p);
         }
 
-        public override void OnNavigatedTo(INavigationParameters parameters)
+        public override async void OnNavigatedTo(INavigationParameters parameters)
         {
             if (parameters.GetValue<bool>("AddItem"))
             {
@@ -72,27 +73,48 @@ namespace Task4.ViewModels
             }
             else if(parameters.GetValue<bool>("LoadFromDataBase"))
             {
-                using (SQLiteConnection conn = new SQLiteConnection(App.FilePath))
-                {
-                    conn.CreateTable<RegionClockData>();
+                
+                List<View> DataBaseClocks = new List<View>();
+                var CurrentUserId = App.Current.Properties.Keys.LastOrDefault();
+                var Data = await Model.ClockRepo.Get<RegionClockData>(x => x.UserID== CurrentUserId);
 
-                    List<View> DataBaseClocks = new List<View>();
-
-                    var Data = conn.Table<RegionClockData>().ToList();
                    foreach(var RegionClockData in Data)
                       DataBaseClocks.Add(new RegionClock(RegionClockData){ Tapped=Tapped});
                   
                      Children = DataBaseClocks;
+            }
+            else if(parameters.GetValue<bool>("UpdateItemDataBase"))
+            {
+                var temp = parameters.GetValue<RegionClock>("OldItem");
+                if (temp != null)
+                {
+                    var Index = Children.FindIndex(p => p == temp) + 1;
+                    RegionClockData Data = new RegionClockData()
+                    {
+                        ID = Index,
+                        UserID = App.Current.Properties.Keys.LastOrDefault(),
+
+                        HandColorRed = temp.HandColor.R,
+                        HandColorGreen = temp.HandColor.G,
+                        HandColorBlue = temp.HandColor.B,
+
+                        TickMarksColorRed = temp.TickMarksColor.R,
+                        TickMarksColorGreen = temp.TickMarksColor.G,
+                        TickMarksColorBlue = temp.TickMarksColor.B,
+                        CountryText = temp.CountryText,
+                        TimeOffset = temp.TimeOffset
+                    };
+
+                    await Model.ClockRepo.Update(Data);
                 }
+            }
                 
             }
             
-        }
-
         private async void ToMainpage()
         {
             App.Current.Properties.Clear();
-            
+            await App.Current.SavePropertiesAsync();
             await NavigationService.NavigateAsync("/NavigationPage/MainPage");
 
         }

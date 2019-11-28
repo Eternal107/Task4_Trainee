@@ -26,7 +26,6 @@ namespace Task4.Conrols
 
        public CustomStackLayout()
         {
-         
             InnitDigitalClock();
             Device.StartTimer(TimeSpan.FromSeconds(1.0 / 60), InnitDigitalClock);
         }
@@ -55,8 +54,6 @@ namespace Task4.Conrols
                     {
                         RegionClock.digitalClock.Text = "Wrong Time Zone";
                     }
-
-
                 }
             }
             return true;

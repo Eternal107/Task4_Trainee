@@ -3,9 +3,12 @@ using Prism.Navigation;
 using SQLite;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Task4.Conrols;
+using Task4.Models;
+using Task4.Repository;
 using Xamarin.Forms;
 
 namespace Task4.ViewModels
@@ -13,23 +16,17 @@ namespace Task4.ViewModels
     public class ClockSettingPageViewModel : ViewModelBase, INavigationAware
     {
 
+        ClockSettingPageModel Model;
+
         private bool AddItem=false;
 
-        private bool IsSaved = false;
 
-        
-
-        RegionClock RegionClock=new RegionClock();
-        
         private DelegateCommand sliderValueChanged;
 
         public DelegateCommand SliderValueChanged =>
             sliderValueChanged ?? (sliderValueChanged = new DelegateCommand(OnSliderValueChanged));
 
-        private DelegateCommand savevalue;
-
-        public DelegateCommand Savevalue =>
-            savevalue ?? (savevalue = new DelegateCommand(()=> { IsSaved = true; }));
+        public DelegateCommand Savevalue=> Model.savevalue??(Model.savevalue=new DelegateCommand(Model.SaveToDataBase));
 
 
         private bool isVisible;
@@ -40,154 +37,124 @@ namespace Task4.ViewModels
             set { SetProperty(ref isVisible, value); }
         }
 
-
-        private string country;
-
         public string Country
         {
-            get { return country; }
-            set { SetProperty(ref country, value); }
+            get { return Model.country; }
+            set { SetProperty(ref Model.country, value); }
         }
-
-
-        private int timeOffset;
 
         public int TimeOffset
         {
-            get { return timeOffset; }
-            set { SetProperty(ref timeOffset, value); }
+            get { return Model.timeOffset; }
+            set { SetProperty(ref Model.timeOffset, value); }
         }
 
 
-
-        private Color _HandColor;
-        private Color _TickMarksColor;
-
         public Color HandColor
         {
-            get { return _HandColor; }
-            set { SetProperty(ref _HandColor, value); }
+            get { return Model._HandColor; }
+            set { SetProperty(ref Model._HandColor, value); }
         }
 
 
         public Color TickMarksColor
         {
-            get { return _TickMarksColor; }
-            set { SetProperty(ref _TickMarksColor, value); }
+            get { return Model._TickMarksColor; }
+            set { SetProperty(ref Model._TickMarksColor, value); }
         }
 
-        private double redHandChannel;
+        
         public double RedHandChannel
         {
-            get { return redHandChannel; }
-            set { SetProperty(ref redHandChannel, value); }
+            get { return Model.redHandChannel; }
+            set { SetProperty(ref Model.redHandChannel, value); }
         }
 
-        private double greenHandChannel;
+      
         public double GreenHandChannel
         {
-            get { return greenHandChannel; }
-            set { SetProperty(ref greenHandChannel, value); }
+            get { return Model.greenHandChannel; }
+            set { SetProperty(ref Model.greenHandChannel, value); }
         }
 
-        private double blueHandChannel;
+        
         public double BlueHandChannel
         {
-            get { return blueHandChannel; }
-            set { SetProperty(ref blueHandChannel, value); }
+            get { return Model.blueHandChannel; }
+            set { SetProperty(ref Model.blueHandChannel, value); }
         }
 
-        private double redTickChannel;
+        
         public double RedTickChannel
         {
-            get { return redTickChannel; }
-            set { SetProperty(ref redTickChannel, value); }
+            get { return Model.redTickChannel; }
+            set { SetProperty(ref Model.redTickChannel, value); }
         }
 
-        private double greenTickChannel;
+        
         public double GreenTickChannel
         {
-            get { return greenTickChannel; }
-            set { SetProperty(ref greenTickChannel, value); }
+            get { return Model.greenTickChannel; }
+            set { SetProperty(ref Model.greenTickChannel, value); }
         }
 
-        private double blueTickChannel;
+       
         public double BlueTickChannel
         {
-            get { return blueTickChannel; }
-            set { SetProperty(ref blueTickChannel, value); }
+            get { return Model.blueTickChannel; }
+            set { SetProperty(ref Model.blueTickChannel, value); }
         }
 
 
         public ClockSettingPageViewModel(INavigationService navigationService) : base(navigationService)
         {
             Title = "clock Setting Page";
+            Model=new ClockSettingPageModel(App.FilePath);
 
         }
 
 
         protected void OnSliderValueChanged()
-        {
-          
+        {       
             HandColor = new Color(RedHandChannel, GreenHandChannel, BlueHandChannel);
             TickMarksColor = new Color(RedTickChannel, GreenTickChannel, BlueTickChannel);
 
-
-        }
-
-        private void SaveToDataBase()
-        {
-            using (SQLiteConnection conn = new SQLiteConnection(App.FilePath))
-            {
-                conn.CreateTable<RegionClockData>();
-
-                RegionClockData Data = new RegionClockData();
-                Data.CountryText = Country;
-                Data.TimeOffset = TimeOffset;
-                Data.HandColorRed = HandColor.R;
-                Data.HandColorGreen = HandColor.G;
-                Data.HandColorBlue = HandColor.B;
-
-                Data.TickMarksColorRed = TickMarksColor.R;
-                Data.TickMarksColorGreen = TickMarksColor.G;
-                Data.TickMarksColorBlue = TickMarksColor.B;
-                conn.Insert(Data);
-               
-            }
         }
 
         void InnitSliders()
         {
 
-            RedHandChannel = RegionClock.HandColor.R;
-            GreenHandChannel = RegionClock.HandColor.G;
-            BlueHandChannel = RegionClock.HandColor.B;
+            RedHandChannel = Model.RegionClock.HandColor.R;
+            GreenHandChannel = Model.RegionClock.HandColor.G;
+            BlueHandChannel = Model.RegionClock.HandColor.B;
 
-            RedTickChannel = RegionClock.TickMarksColor.R;
-            GreenTickChannel = RegionClock.TickMarksColor.G;
-            BlueTickChannel = RegionClock.TickMarksColor.B;
+            RedTickChannel = Model.RegionClock.TickMarksColor.R;
+            GreenTickChannel = Model.RegionClock.TickMarksColor.G;
+            BlueTickChannel = Model.RegionClock.TickMarksColor.B;
 
         }
 
-        public override void OnNavigatedFrom(INavigationParameters parameters)
+        public override async void OnNavigatedFrom(INavigationParameters parameters)
         {
-            if (AddItem && IsSaved)
+            if (AddItem && Model.IsSaved)
             {
-                SaveToDataBase();
-                RegionClock.HandColor = new Color(RedHandChannel, GreenHandChannel, BlueHandChannel);
-                RegionClock.TickMarksColor = new Color(RedTickChannel, GreenTickChannel, BlueTickChannel);
-                RegionClock.CountryText = Country;
-                RegionClock.TimeOffset = TimeOffset;
-                
+                var CurrentUserId = App.Current.Properties.Keys.LastOrDefault();
+                var RegionClockData =  (await Model.ClockRepo.Get<RegionClockData>(x => x.UserID == CurrentUserId)).LastOrDefault();
+
+                Model.RegionClock = new RegionClock(RegionClockData);
+
                 parameters.Add("AddItem", true);
-                parameters.Add("NewItem", RegionClock);
+                parameters.Add("NewItem", Model.RegionClock);
             }
             else
             {
-                RegionClock.HandColor = new Color(RedHandChannel, GreenHandChannel, BlueHandChannel);
-                RegionClock.TickMarksColor = new Color(RedTickChannel, GreenTickChannel, BlueTickChannel);
-                RegionClock.CountryText = Country;
-                RegionClock.TimeOffset = TimeOffset;
+                
+                Model.RegionClock.HandColor = new Color(RedHandChannel, GreenHandChannel, BlueHandChannel);
+                Model.RegionClock.TickMarksColor = new Color(RedTickChannel, GreenTickChannel, BlueTickChannel);
+                Model.RegionClock.CountryText = Country;
+                Model.RegionClock.TimeOffset = TimeOffset;
+                parameters.Add("UpdateItemDataBase", true);
+                parameters.Add("OldItem", Model.RegionClock);
             }
 
         }
@@ -208,11 +175,12 @@ namespace Task4.ViewModels
             else
             {
                 IsVisible = false;
-                RegionClock = parameters.GetValue<RegionClock>("RegionClock");
-                Country = RegionClock.CountryText;
-                TimeOffset = RegionClock.TimeOffset;
-                HandColor = RegionClock.HandColor;
-                TickMarksColor = RegionClock.TickMarksColor;
+                
+                Model.RegionClock = parameters.GetValue<RegionClock>("RegionClock");
+                Country = Model.RegionClock.CountryText;
+                TimeOffset = Model.RegionClock.TimeOffset;
+                HandColor = Model.RegionClock.HandColor;
+                TickMarksColor = Model.RegionClock.TickMarksColor;
                 InnitSliders();
             }
 

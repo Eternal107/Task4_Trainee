@@ -145,7 +145,6 @@ namespace Task4.Controls
                               center.Y - offset * height,
                               width, height));
 
-            // Set the AnchorY property for rotations.
             boxView.AnchorY = handParams.Offset;
         }
 
@@ -173,7 +172,7 @@ namespace Task4.Controls
             hourHand.Rotation = 30 * (dateTime.Hour % 12) + 0.5 * dateTime.Minute;
             minuteHand.Rotation = 6 * dateTime.Minute + 0.1 * dateTime.Second;
 
-            // Do an animation for the second hand.
+          
             double t = dateTime.Millisecond / 1000.0;
 
             if (t < 0.5)

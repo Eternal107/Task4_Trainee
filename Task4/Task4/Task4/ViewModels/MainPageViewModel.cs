@@ -7,30 +7,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Task4.DataBase;
+using Task4.Models;
+using Task4.Repository;
 
 namespace Task4.ViewModels
 {
     public class MainPageViewModel : ViewModelBase, INavigatedAware
     {
-        private DelegateCommand clockPage;
-
-        public DelegateCommand ToClockPage =>
-       clockPage ?? (clockPage = new DelegateCommand(PushClockPage));
-
-        private string login;
-        private string password;
+        private MainPageModel Model;
+        
+        public DelegateCommand ToClockPage=> Model.clockPage ?? (Model.clockPage = new DelegateCommand(PushClockPage));
 
         public string Login
         {
-            get { return login; }
-            set { SetProperty(ref login, value); }
+            get { return Model.login; }
+            set { SetProperty(ref Model.login, value); }
         }
-
 
         public string Password
         {
-            get { return password; }
-            set { SetProperty(ref password, value); }
+            get { return Model.password; }
+            set { SetProperty(ref Model.password, value); }
         }
 
 
@@ -38,21 +36,25 @@ namespace Task4.ViewModels
           : base(navigationService)
         {
             Title = "Login Page";
+            Model = new MainPageModel(App.FilePath);
+            
         }
 
-        private void PushClockPage()
+        private async void PushClockPage()
         {
             if (Login != null)
-                if (App.User.ContainsKey(Login))
-                    if (App.User[Login] == Password)
-                    {
-                        App.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"{Login}" + ".db");
-                        App.Current.Properties.Add(Login, Password);
-                        App.Current.SavePropertiesAsync();
-                        var p = new NavigationParameters();
-                        p.Add("LoadFromDataBase", true);
-                        NavigationService.NavigateAsync("/NavigationPage/ClockPage", p);
-                    }
+            {
+                User user = new User() { Login = Login, Password=Password};
+                if(await Model.UserRepo.LoginValidate(user))
+                {
+                    string CurrentLogin = (await Model.UserRepo.Get<User>(x => x.Login == Login)).LastOrDefault().Login;
+                    App.Current.Properties.Add(CurrentLogin, Password);
+                    await App.Current.SavePropertiesAsync();
+                    var p = new NavigationParameters();
+                    p.Add("LoadFromDataBase", true);
+                    await NavigationService.NavigateAsync("/NavigationPage/ClockPage", p);
+                }
+            }
         }
     }
 }
